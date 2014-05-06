@@ -1,0 +1,131 @@
+#!/usr/bin/env zsh
+#(Warning: DO NOT EXECUTE)
+#
+
+typeset -gU path fpath cdpath manpath infopath mailpath
+
+# For zsh-completions(1):
+#   fpath=(/usr/local/share/zsh-completions $fpath)
+
+# Set the the list of directories that cd searches.
+cdpath=(
+  .
+  ~/Repos
+  ~/Projects
+  ~/bin
+)
+
+#
+# Set the list of directories that Zsh searches for programs.
+#  Order's important!  Search my home directory first..
+
+# print "zshenv PATH is: $PATH"
+
+# PATH nucleous
+path=(
+      $HOME/bin
+      /usr/local/bin
+      /usr/local/sbin
+      /usr/local/libexec
+      /usr/bin
+      /usr/sbin
+      /usr/libexec
+      /bin
+      /sbin
+      )
+
+# MANPATH nucleous:
+manpath=(
+         /usr/local/share/man
+         /usr/share/man
+         )
+
+
+
+
+#======================================
+# Xcode:
+# Make sure xcode's Man pages are last, due to git pollution!
+# Put the Developer/usr/bin directory at the end, too. This makes sure that
+# newer user-installed packages (e.g., homebrew installs) get resolved first.
+# Apple's binaries are usally outdated.  To resolve the Apple-blessed tools
+# first, use xcode-select(1) and xcrun(1) instead
+##
+
+if [[ -x /usr/bin/xcode-select ]]; then
+  xcode_root="$(xcode-select -print-path)"
+  path=($path $xcode_root/usr/bin)
+  manpath=($xcode_root/share/man $manpath)
+fi
+
+
+
+
+#======================================
+# Node Package Manager:
+#
+# seems terribly recursive!
+##
+
+if [[ -d /usr/local/share/npm ]]; then
+	path=($path /usr/local/share/npm/bin)
+	manpath=($manpath /usr/local/share/npm/share/man)
+fi
+
+
+
+
+#======================================
+# Gnu coreutils:
+##
+
+#if [[ -d /usr/local/opt/coreutils/libexec/gnubin ]]; then
+#  path=(/usr/local/opt/coreutils/libexec/gnubin $path)
+#  manpath=(/usr/local/opt/coreutils/share/man $manpath)
+#fi
+
+
+
+
+#======================================
+# gEDA-gaf: Schematic Capture/Simulation, netlist generation,
+# PCB Layout
+##
+
+export GEDADATA=""
+export GEDADATARC="$HOME/.gEDA"
+
+
+
+
+#======================================
+# Quartz X11
+##
+
+if [[ -d /opt/X11 ]]; then
+  path=(/opt/X11/bin $path)
+  manpath=(/opt/X11/shared/man $manpath)
+fi
+
+
+
+
+#======================================
+# Gnu PGP
+##
+
+if [[ -d /usr/local/MacGPG2 ]]; then
+  path=(/usr/local/MacGPG2/bin $path)
+  manpath=(/usr/local/MacGPG2/share/man $manpath)
+fi
+
+#======================================
+# Launchctl:
+# Launchctl will make sure these environment variables are
+# present in windowed apps, too
+##
+
+launchctl setenv PATH "$PATH"
+launchctl setenv MANPATH "$MANPATH"
+# launchctl setenv INFOPATH "$INFOPATH"
+return 0

@@ -1,0 +1,224 @@
+#!/usr/bin/env zsh
+#(Warning: DO NOT EXECUTE)
+#
+#
+
+
+#======================================
+# FreeDesktop.org
+#
+# Support for the Desktop Group's stuff (review for each OS)
+####
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_LOCAL_HOME="$HOME/.local"
+[[ -d $XDG_CONFIG_HOME ]] || mkdir "$XDG_CONFIG_HOME"
+[[ -d $XDG_CACHE_HOME ]]  || mkdir "$XDG_CACHE_HOME" 
+[[ -d $XDG_LOCAL_HOME ]]  || mkdir "$XDG_LOCAL_HOME"
+
+#====================================================================
+# Build flags
+# Use the brew-installed tcl, rather than the system's
+#    LDFLAGS:  -L/usr/local/opt/tcl-tk/lib
+#    CPPFLAGS: -I/usr/local/opt/tcl-tk/include
+# TODO: Research other settings I might need for Ruby, etc.
+####
+
+#====================================================================
+# Global: History
+####
+export HISTCONTROL=ignoredups
+export HISTTIMEFORMAT="@c > "
+#export HISTFILE="~/log/$(date "+%F")-bash-history-$(basename $my_tty).log"
+#export HISTFILESIZE
+#export HISTSIZE
+#export HISTIGNORE="&:bg:fg:ll:h"
+
+
+
+
+# ==============================================================
+# Editors
+#
+# Preferred editor for local and remote sessions
+# 'vim -f' means 'run vim in the foreground, dont't fork'
+##
+
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim -f'
+  export VISUAL='vim -f'
+else
+  export EDITOR='vim -f'
+  export VISUAL="vim -f"
+fi
+# Use MacVim's runtime and $HOME/.vim
+export VIMRUNTIME=/Applications/MacVim.app/Contents/Resources/vim/runtime
+
+# TODO: Re-enable once I fix my Vim configuration
+# export VIM="$HOME/.vim"
+# export VIM=/Applications/MacVim.app/Contents/Resources/vim
+
+
+
+# ==============================================================
+# LESS
+##
+
+export LESSCHARSET="utf-8"
+
+# Set the Less input preprocessor.
+if (( $+commands[lesspipe.sh] )); then
+  export LESSOPEN='| /usr/bin/env lesspipe.sh %s 2>&-'
+fi
+
+if [[ -x `which less` ]] ; then
+    export PAGER="less"
+    export PERLDOC_PAGER="less -+C -E"
+    export LESS="-R -C -i -j4 -M -e -PM?m(%i/%m) .?f%f:Standard input.\: ?bb%bb?B/%B. Bytes.?pb (%pb\%).?lb, Zeile\: %lb?e ?x(-> %x):(EOF).%t"
+    # export LESS='-rX~deMwPM?f%f ?e[EOF] ?lt[Line\: %lb].:?lt[Line\: %lt]. ?pt%pt\%...'
+    export LESSBINFMT='*u[%X]'
+#    if [[ $terminfo[colors] -ge 8 ]] ; then
+#        export LESS_TERMCAP_mb=$'\E[01;31m'
+#    	  export LESS_TERMCAP_md=$'\E[01;31m'
+#    	  export LESS_TERMCAP_me=$'\E[0m'
+#        export LESS_TERMCAP_se=$'\E[0m'
+#        export LESS_TERMCAP_so=$'\E[01;44;33m'
+#        export LESS_TERMCAP_ue=$'\E[0m'
+#        export LESS_TERMCAP_us=$'\E[01;32m'
+#    fi
+else
+    export PAGER="more"
+fi
+
+# ==============================================================
+# MAN
+# set the width to 80. Its enough
+##
+
+# export MANWIDTH=80
+if which most &> /dev/null; then
+  export MANPAGER="most"
+else
+  export MANPAGER="less -iMXF"
+  # use colors when browsing man pages (if not using pinfo or PAGER=most)
+  [[ -d ~/.terminfo/ ]] && alias man='TERMINFO=~/.terminfo/ LESS=C TERM=mostlike PAGER=less man'
+fi
+
+
+
+# ==============================================================
+# Hard-to-reach directories:
+#
+# export drop=/Users/Shared/Dropbox
+# export dots=/Users/Shared/Dropbox/dotfiles
+# export saplist=/System/Library/LaunchAgents/org.openbsd.ssh-agent.plist
+# export sdplist=/System/Library/LaunchDaemons/ssh.plist
+# export msdplist=/Library/LaunchDaemons/org.macports.OpenSSH.plist
+
+# Browser (Default)
+# if [[ "$OSTYPE" == darwin* ]]; then
+#   export BROWSER='lynx -nocolor'
+# fi
+
+
+
+# =============================================================================
+# = Define the Environment for commands
+# =============================================================================
+#export GREP_OPTIONS='--color=auto'
+
+
+
+
+#======================================
+# Python Environment (pyenv):
+#
+# Uses pyenv with the pyenv-virtualenv plugin
+
+#======================================
+# Python and pyenv:
+# According to Homebrew- we don't need the python directory in our path.
+# Executable scripts are now linked into /usr/local/bin
+##
+
+# PATH=${PATH}:/usr/local/share/python
+
+# export VERSIONER_PYTHON_VERSION=2.7
+# export PYTHONPATH="$(brew --prefix)/lib/python2.7/site-packages"
+# export PYTHONPATH="$PYTHONPATH:/System/Library/Frameworks/Python.framework/Versions/2.6/Extras/lib/python/PyObjC"
+
+if which pyenv > /dev/null; then
+  #export PYENV_ROOT="$HOME/.pyenv"
+  eval "$(pyenv init -)"
+fi
+
+
+
+
+#======================================
+# Ruby Environment:
+#----rbenv
+export RBENV_ROOT=/usr/local/var/rbenv
+if which rbenv >& /dev/null; then eval "$(rbenv init -)"; fi
+
+
+
+
+#======================================
+# Vagrant:
+##
+
+if which vagrant &> /dev/null; then
+	export VAGRANT_HOME="/Volumes/LaCie6T/vagrant.d"
+	export VAGRANT_DEFAULT_PROVIDER="vmware_fusion"
+fi
+
+
+
+
+#======================================
+# Byobu, Tmux and Screen:
+##
+
+export BYOBU_PREFIX=$(brew --prefix)
+
+
+
+
+#======================================
+# Hub Environment
+# Alias git and git-completion to hub
+# This aliases git to hub AND aliases the git completion system to hub.
+##
+
+if which hub > /dev/null; then
+	alias git=hub
+fi
+
+
+
+
+#======================================
+# Heroku, and Foreman
+##
+
+# PATH=${PATH}:/usr/local/heroku/bin
+# PATH=${PATH}/usr/local/foreman/bin
+
+
+
+
+#======================================
+# Packer:
+##
+
+# if [[ -d ${HOME}/packer ]]; then
+#   PATH="$PATH:${HOME}/packer"
+# fi
+
+
+
+
+#======================================
+# IP for Home:
+# export IPHOME='ip72-211-224-49.oc.oc.cox.net.'

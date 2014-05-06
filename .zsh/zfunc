@@ -1,0 +1,131 @@
+#!/usr/bin/env zsh
+#(Warning: DO NOT EXECUTE)
+#
+#
+#
+
+#====================================================================
+# Load Common Library functions:
+####
+[[ -r $HOME/.zsh/lib/common ]] && source "$HOME/.zsh/lib/common"
+
+
+
+function ugrep() {
+  egrep -i "^[0-9a-f]{4,} .*$*" "$(locate CharName.pm)" | \
+  while read h d; do /usr/bin/printf "\U$(printf "%08x" 0x"$h")\tU+%s\t%s\n" "$h" "$d"; done
+}
+
+#====================================================================
+#	printopts
+#
+#	Prints options in color: red for unset and green for set
+####
+function printopts()
+{
+  typeset -a copts
+  j=1
+  for i in ${(k)options}; do
+    if [[ $options[$i] == "on" ]]; then
+      copts[$j]="%{%F{green}%}$i%{%f%}"
+    else
+      copts[$j]="%{%F{red}%}$i%{%f%}"
+    fi
+    ((j++))
+  done
+  print -PC 5 ${(i)copts}
+}
+
+
+#====================================================================
+# Show reason of revocation for <keyid>  with gpg.  Shows a sigclass 0x20
+# (Key revocation) signature packet on a key, including all subpackets.
+# Subpacket 2 is the date of revocation, subpacket 26 the relevant policy,
+# subpacket 29 the reason of revocation (cf.
+# http://rfc.askapache.com/rfc4880/rfc4880.html#section-5.2.3.23 ) and subpacket
+# 16 the issuer of the revocation certificate (usually should be the same as the
+# revoked key).
+
+rrev() {
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: rrev <keyID>"
+    return 1
+  else
+    gpg --export "${1}" | gpg --list-packets | grep -Pzao ':signature packet:.*\n\t.*sigclass 0x20(\n\t.*)*'
+  fi
+}
+
+
+
+#====================================================================
+# Encrypt/Decrypt Directories
+#
+# NOTE: Assumes default keyIDs are specified in gnupg.conf, like so:
+#
+#       local-user 0xDEADBEEF
+#       encrypt-user 0xDEADBEEF
+#
+####
+encdir() {
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <directory>"
+    return 1
+  else
+    _dir="$(dirname "$1")"
+    _encdir="$(basename "$1")"
+    tar -cvz "$1" | gpg --encrypt --output  "${_encdir}.tar.gz.gpg"
+    return $?
+  fi
+}
+
+
+
+
+#====================================================================
+# Decrypt Directories
+#
+####
+decdir() {
+  return 0      # safety
+  if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 <directory> <keyID>"
+    return 1
+  else
+    _dir="$(dirname "$1")"
+    _encdir="$(basename "$1")"
+    _keyid="$2"
+    gpg --decrypt --recipient "${_keyid}" < "${_encdir}.tar.gz.gpg" | tar -xv "${_dir}"
+    return $?
+  fi
+}
+
+
+
+
+#====================================================================
+# Create and encrypt DMG
+####
+encdmg() {
+  if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 <source directory> <dmg name>"
+    return 1
+  else
+    hdiutil create -encryption AES-256 -fs HFS+ --stdinpass -srcfolder "${1}" "${2}.dmg"
+    return $?
+fi
+}
+
+
+
+#====================================================================
+# Decrypt and attach encrypted DMG
+####
+decdmg() {
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <dmg name>"
+    return 1
+  else
+    hdiutil attach -encryption AES-256 -fs HFS+ --stdinpass "${2}.dmg"
+    return $?
+  fi
+}
