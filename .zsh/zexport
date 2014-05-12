@@ -59,6 +59,14 @@ export VIMRUNTIME=/Applications/MacVim.app/Contents/Resources/vim/runtime
 # export VIM=/Applications/MacVim.app/Contents/Resources/vim
 
 
+# ==============================================================
+# LINTERS:
+#   xmllint(1)
+##
+  export XML_CATALOG_FILES=/usr/local/etc/xml/catalog
+
+
+
 
 # ==============================================================
 # LESS
