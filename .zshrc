@@ -18,7 +18,7 @@ export ZSHRC_DONE=1
 #====================================================================
 # Setup Oh-My-ZSH Environment Variables
 ##
-export ZSH=$HOME/.zsh/oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 export ZSH_THEME="musaic"	# Located in the custom/themes directory
 export CASE_SENSITIVE="false"
 export DISABLE_AUTO_UPDATE="true"
